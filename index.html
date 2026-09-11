@@ -106,12 +106,6 @@ button{font-family:inherit}
 .tickmark{position:absolute;top:50%;width:1px;height:9px;background:var(--bdr);transform:translate(-50%,-50%);opacity:.75;pointer-events:none}
 .ticklbls{display:flex;justify-content:space-between;font-size:9px;color:var(--txt3);font-variant-numeric:tabular-nums;margin-top:2px;letter-spacing:.04em}
 .grip-gauge .tickmark{top:0;height:100%;transform:translateX(-50%);opacity:.5;z-index:2}
-#diagBar{display:none;position:fixed;left:0;right:0;bottom:0;z-index:60;background:rgba(10,10,12,.94);border-top:1px solid var(--acc);padding:8px 12px 10px;font-size:11px;color:var(--txt2);backdrop-filter:blur(6px)}
-#diagBar.on{display:block}
-#diagBar .dg-row{display:flex;align-items:center;gap:6px;margin-bottom:3px;flex-wrap:wrap}
-#diagBar .dg-k{color:var(--txt3);font-size:10px}
-#diagBar .dg-v{color:var(--acc);font-variant-numeric:tabular-nums;margin-right:10px}
-#diagBar .dg-note{color:var(--txt3);font-size:10px;line-height:1.5;margin-top:2px}
 .csec{background:var(--sur);border:1px solid var(--bdr);border-radius:var(--r);padding:14px;margin-top:10px;position:relative}
 .csec h3{font-size:10px;color:var(--acc);text-transform:uppercase;letter-spacing:.14em;margin-bottom:11px;display:flex;align-items:center;gap:8px}
 .csec h3::after{content:'';flex:1;height:1px;background:linear-gradient(90deg,var(--bdr),transparent)}
@@ -543,6 +537,34 @@ input[type=range]:disabled{opacity:.4;cursor:not-allowed}
 .boot-cnr.tr{top:18px;right:18px;border-left:none;border-bottom:none}
 .boot-cnr.bl{bottom:18px;left:18px;border-right:none;border-top:none}
 .boot-cnr.br{bottom:18px;right:18px;border-left:none;border-top:none}
+
+/* ===== HELP (使い方) ===== */
+.help-btn{width:26px;height:26px;flex:0 0 auto;border-radius:50%;background:none;border:1px solid var(--bdr);color:var(--txt2);font-size:13px;font-weight:600;line-height:1;cursor:pointer;transition:color .2s,border-color .2s,box-shadow .2s}
+.help-btn:hover{color:var(--acc);border-color:var(--acc);box-shadow:0 0 10px rgba(255,214,51,.28)}
+.help-ov{position:fixed;inset:0;z-index:400;display:none;flex-direction:column;background:rgba(4,7,14,.97);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);max-width:520px;margin:0 auto}
+.help-ov.on{display:flex}
+.help-hd{flex:0 0 auto;display:flex;align-items:center;gap:10px;padding:14px 16px;border-bottom:1px solid var(--bdr);background:rgba(8,20,32,.6)}
+.help-hd h2{flex:1;margin:0;font-family:var(--mono);font-size:12px;font-weight:600;letter-spacing:.18em;color:var(--acc);text-transform:uppercase}
+.help-body{flex:1;min-height:0;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:14px 16px 44px}
+.help-sec{margin:20px 0 8px;font-family:var(--mono);font-size:10.5px;letter-spacing:.16em;color:var(--txt3);text-transform:uppercase}
+.help-body>.help-sec:first-child{margin-top:0}
+.help-lead{font-size:12.5px;color:var(--txt2);line-height:1.8;margin-bottom:10px}
+.help-lead b{color:var(--txt)}
+.help-item{background:var(--sur);border:1px solid var(--bdr);border-radius:var(--rs);margin-bottom:6px;overflow:hidden}
+.help-item>summary{display:flex;align-items:center;gap:8px;padding:11px 13px;font-size:13px;font-weight:600;color:var(--txt);cursor:pointer;list-style:none;user-select:none}
+.help-item>summary::-webkit-details-marker{display:none}
+.help-item>summary::after{content:'＋';margin-left:auto;color:var(--acc);font-size:12px}
+.help-item[open]>summary::after{content:'−'}
+.help-item[open]>summary{border-bottom:1px solid var(--bdr)}
+.help-in{padding:11px 13px 13px;font-size:12.5px;color:var(--txt2);line-height:1.85}
+.help-in h4{margin:12px 0 3px;font-size:11px;font-weight:600;letter-spacing:.1em;color:var(--acc2)}
+.help-in h4:first-child{margin-top:0}
+.help-in ol,.help-in ul{margin:0;padding-left:19px}
+.help-in li{margin-bottom:2px}
+.help-in p{margin:0 0 4px}
+.help-in b{color:var(--txt)}
+.help-in .hnote{margin-top:9px;padding:8px 10px;background:var(--bg3);border-left:2px solid var(--acc-dim);border-radius:var(--rs);font-size:11.5px;color:var(--txt3);line-height:1.7}
+.help-end{margin-top:22px;font-size:11px;color:var(--txt3);text-align:center;line-height:1.7}
 </style>
 </head>
 <body>
@@ -570,6 +592,7 @@ input[type=range]:disabled{opacity:.4;cursor:not-allowed}
 
 <div class="topbar">
   <h1><span class="hxdot">◈</span> Canary Tune</h1>
+  <button class="help-btn" onclick="openHelp()" aria-label="使い方を見る" title="使い方">?</button>
 </div>
 
 <div class="tabs">
@@ -700,13 +723,6 @@ input[type=range]:disabled{opacity:.4;cursor:not-allowed}
     <div class="crow">
       <label>セントの説明を表示する</label>
       <button class="btn" onclick="showCentNote()">もう一度出す</button>
-    </div>
-    <div class="crow">
-      <label>測定の様子を表示</label>
-      <select id="diagSel" onchange="onDiag(this.value)">
-        <option value="off">オフ</option>
-        <option value="on">オン</option>
-      </select>
     </div>
     <div class="crow">
       <label>合致音</label>
@@ -1055,11 +1071,273 @@ input[type=range]:disabled{opacity:.4;cursor:not-allowed}
 </div>
 
 <!-- ===== 測定の様子（診断表示） ===== -->
-<div id="diagBar">
-  <div class="dg-row"><span class="dg-k">音量</span><span class="dg-v" id="dgLevel">—</span><span class="dg-k">反応する下限</span><span class="dg-v" id="dgGate">—</span></div>
-  <div class="dg-row"><span class="dg-k">拾えている音程</span><span class="dg-v" id="dgPitch">—</span></div>
-  <div class="dg-row"><span class="dg-k">音程が消えてから</span><span class="dg-v" id="dgLost">—</span><span class="dg-k">録音経過</span><span class="dg-v" id="dgElapsed">—</span></div>
-  <div class="dg-note" id="dgHint">弾き終わって手でミュートした後、この欄を見てください。</div>
+
+<!-- ===== HELP OVERLAY (使い方) ===== -->
+<div class="help-ov" id="helpOv" role="dialog" aria-modal="true" aria-label="使い方">
+  <div class="help-hd">
+    <h2>◈ 使い方</h2>
+    <button class="btn" onclick="closeHelp()">閉じる</button>
+  </div>
+  <div class="help-body" id="helpBody">
+
+    <div class="help-sec">はじめに</div>
+    <div class="help-lead">
+      このアプリは、マイクで拾った音の高さを測る道具です。チューニングのほか、ベンドやビブラートの練習、楽器の音程の点検にも使えます。
+    </div>
+    <details class="help-item">
+      <summary>使い始める前に</summary>
+      <div class="help-in">
+        <h4>1. マイクを許可する</h4>
+        <p>最初の画面で「INITIALIZE」を押し、マイクの使用を許可してください。許可しないと音を拾えません。</p>
+        <h4>2. 静かな場所で使う</h4>
+        <p>エアコンの音や話し声があると、弾いていないのに反応することがあります。</p>
+        <h4>3. 環境を測定する</h4>
+        <p>「チューナー」画面の設定にある<b>「環境を測定（3秒静音）」</b>を押し、静かにしたまま3秒待ちます。周りの音の大きさに合わせて、反応する音量の下限が決まります。場所を変えたら測り直してください。</p>
+        <div class="hnote">スピーカーから音を出しながらだと、その音まで拾ってしまいます。生音か、ヘッドホンをお使いください。</div>
+      </div>
+    </details>
+
+    <div class="help-sec">6つの画面</div>
+
+    <details class="help-item">
+      <summary>チューナー</summary>
+      <div class="help-in">
+        <h4>できること</h4>
+        <p>弾いた音の高さを、音名と「そこからのズレ」で表示します。</p>
+        <h4>手順</h4>
+        <ol>
+          <li>中央の丸をタップして開始します。</li>
+          <li>弦を1本だけ弾きます。</li>
+          <li>丸の中に音名、下のメーターにズレが出ます。</li>
+        </ol>
+        <h4>表示の読み方</h4>
+        <ul>
+          <li><b>横のメーター</b>：中央の0が合っている状態。右（＋）は高すぎ、左（−）は低すぎ。</li>
+          <li><b>右の円盤</b>：模様の流れが止まれば合っています。右へ流れるときは高く、左へ流れるときは低い状態です。</li>
+          <li><b>周波数</b>：拾っている音のヘルツ。<b>明瞭度</b>：音のはっきりさ。低いときは数値が不安定になります。</li>
+        </ul>
+        <h4>2つのモード</h4>
+        <ul>
+          <li><b>クロマチック</b>：どんな音でも、いちばん近い音名で判定します。</li>
+          <li><b>楽器別</b>：楽器とチューニングを選ぶと、その弦だけを狙って判定します。カポを付けているときはフレット数を選んでください。</li>
+        </ul>
+        <h4>設定</h4>
+        <ul>
+          <li><b>基準音A</b>：合わせる基準の高さ。通常は440Hzです。</li>
+          <li><b>マイクゲイン</b>：反応が弱いときに上げます。上げすぎると雑音を拾います。</li>
+          <li><b>音が止まってから結果を出すまで</b>：ベンド・ビブラート・押弦圧で、弾き終わってから結果が出るまでの間です。短くすると早く出ますが、弾いている途中で切られやすくなります。</li>
+          <li><b>基準音を鳴らす</b>：耳で合わせたいときの音出しです。</li>
+        </ul>
+      </div>
+    </details>
+
+    <details class="help-item">
+      <summary>音程調整</summary>
+      <div class="help-in">
+        <p>楽器そのものの音程を点検する画面です。2つのモードがあります。</p>
+        <h4>オクターブ</h4>
+        <p>開放弦と12フレットの音を比べ、サドルの位置を直す必要があるかを見ます。</p>
+        <ol>
+          <li>楽器を選び、「開始」を押します。</li>
+          <li>開放弦を弾きます。</li>
+          <li>同じ弦の12フレットを弾きます。</li>
+          <li>ズレが表示されます。次の弦へ進みます。</li>
+        </ol>
+        <h4>音程地図</h4>
+        <p>弦を1本選び、開放・5フレット・7フレット・12フレットを弾きます。どの位置でどれだけズレるかを一覧にして、楽器全体のクセを見ます。</p>
+        <h4>表示の読み方</h4>
+        <ul>
+          <li>緑（±3¢以内）＝問題なし／黄（±8¢まで）＝要確認／赤（それ以上）＝調整が必要。</li>
+          <li>12フレットが<b>高い（シャープ）</b>ならサドルを弦から遠ざけ、<b>低い（フラット）</b>なら近づけます。</li>
+          <li>5・7フレットのズレは、主にナットの位置やフレットの精度の目安です。</li>
+        </ul>
+        <div class="hnote">弦が古いと数値が安定しません。新しい弦で、十分に伸ばしてから測ってください。</div>
+      </div>
+    </details>
+
+    <details class="help-item">
+      <summary>ベンド</summary>
+      <div class="help-in">
+        <h4>できること</h4>
+        <p>狙った音まで正確にベンドできているかを測り、点数と助言を返します。</p>
+        <h4>手順</h4>
+        <ol>
+          <li>練習する種類を選びます。</li>
+          <li>ターゲット（弦・フレット・ベンド幅）を選びます。</li>
+          <li>「開始」を押し、弾いてベンドします。</li>
+          <li>手で弦を止めると、解析が始まります。</li>
+        </ol>
+        <h4>6つの種類</h4>
+        <ul>
+          <li><b>ベンドのみ</b>：狙った音まで上げる精度。</li>
+          <li><b>アップ→キープ→ダウン</b>：上げて、保って、戻すまで。</li>
+          <li><b>ダウンのみ</b>：先に上げておいてから弾き、下げます。</li>
+          <li><b>ロングトーン</b>：上げた音を長く保てるか。</li>
+          <li><b>チョーキングビブラート</b>：上げた音を中心に揺らす精度。</li>
+          <li><b>プリング</b>：指を離すときに音が上ずっていないか。</li>
+        </ul>
+        <h4>表示の読み方</h4>
+        <ul>
+          <li><b>星</b>：総合評価。<b>数値</b>：狙いからのズレ（¢）。下に助言が出ます。</li>
+          <li><b>🔊</b> 自分の演奏／<b>🎯</b> お手本／<b>🔀</b> 2つを重ねて、それぞれ聴けます。</li>
+          <li>「詳細データ・カーブを見る」では、音程の動きを線で見られます。線の下の◀▶で、測る範囲を前後にずらせます。</li>
+        </ul>
+        <h4>5問チャレンジ</h4>
+        <p>お題が5問ランダムに出て、得点が付きます。最高得点は次に開いたときも残ります。</p>
+        <h4>2つのチェック</h4>
+        <ul>
+          <li><b>練習モード</b>：オンにすると弾いている最中も音程が見えます。オフだと弾き終わるまで見えないので、耳だけを頼りにする練習になります。</li>
+          <li><b>構え中の表示</b>：弾く前にマイクが拾っている音を表示します。弾いていないのに反応するときは、雑音を拾っています。</li>
+        </ul>
+      </div>
+    </details>
+
+    <details class="help-item">
+      <summary>ビブラート</summary>
+      <div class="help-in">
+        <h4>できること</h4>
+        <p>ビブラートの速さ・深さ・規則性・中心の音のズレを測ります。</p>
+        <h4>手順</h4>
+        <ol>
+          <li>「開始」を押します。</li>
+          <li>1音を弾き、ビブラートをかけます。</li>
+          <li>弦を止めると解析が始まります。</li>
+        </ol>
+        <h4>表示の読み方</h4>
+        <ul>
+          <li><b>中心音</b>：揺れの真ん中の音。ここが10¢以内なら、狙った音の上で揺れています。</li>
+          <li><b>速さ</b>：1秒あたりの往復回数。3〜4.2Hzが標準的な範囲です。</li>
+          <li><b>深さ</b>：揺れの大きさ。中心から上下に何¢動いているか。</li>
+          <li><b>規則性</b>：揺れの間隔がそろっているか。「整っている／ややむら／むら大」で表示します。</li>
+          <li>速さと深さから、その揺れが合いやすい音楽の傾向も表示されます。</li>
+        </ul>
+        <div class="hnote">「周期的な揺れが検出されませんでした」と出るときは、揺れが小さすぎるか短すぎます。もう少しはっきり、長めにかけてください。</div>
+      </div>
+    </details>
+
+    <details class="help-item">
+      <summary>トーン解析</summary>
+      <div class="help-in">
+        <h4>できること</h4>
+        <p>音色を、低い音から高い音までの成分の強さとして映します。ピッキングの位置やピックアップを変えたときの違いを、目で比べられます。</p>
+        <h4>手順</h4>
+        <ol>
+          <li>「開始」を押します。</li>
+          <li>1音を長めに伸ばすと、グラフが動きます。</li>
+          <li>A〜Dの「録る」を押して音を伸ばすと、音色が安定したところで自動的に記録されます。</li>
+          <li>条件を変えて別の枠に録り、「重ねる」で比べます。</li>
+        </ol>
+        <h4>表示の読み方</h4>
+        <ul>
+          <li>左が低い音、右が高い音。棒が高いほどその成分が強い音です。</li>
+          <li>落ちてくる白い印は、直前のいちばん強かった値です。</li>
+          <li>縦線は基音と倍音の位置で、数字は何番目の倍音かを示します。</li>
+        </ul>
+        <div class="hnote">比べるときは、弦・フレット・弾く強さをそろえてください。変える条件は1つだけにすると違いが分かります。</div>
+      </div>
+    </details>
+
+    <details class="help-item">
+      <summary>押弦圧</summary>
+      <div class="help-in">
+        <h4>できること</h4>
+        <p>押さえる力の強さが音程をどれだけ変えるかを見て、力の入れすぎに気づくための画面です。</p>
+        <h4>手順</h4>
+        <p>同じ弦の同じフレットを、力加減だけ変えて3回のばします。</p>
+        <ol>
+          <li><b>通常</b>：いつも弾く力。これが基準になります。</li>
+          <li><b>全力</b>：思い切り強く押さえた力。</li>
+          <li><b>ギリギリ</b>：かろうじて鳴る最小の力。</li>
+        </ol>
+        <h4>表示の読み方</h4>
+        <ul>
+          <li>強く押さえるほど音は上ずり（右へ）、力を抜くほど下がります（左へ）。</li>
+          <li>通常と全力の差が大きいほど、普段の力加減が音程に影響しやすい状態です。</li>
+          <li>通常とギリギリの差が小さければ、すでに軽い力で弾けています。</li>
+        </ul>
+        <div class="hnote">これは音程の変化から力を推定する相対的な測定です。弦や楽器で変わるので、毎回「通常」から録り直してその場で比べてください。</div>
+      </div>
+    </details>
+
+    <div class="help-sec">うまく測れないとき</div>
+
+    <details class="help-item">
+      <summary>弾いても反応しない</summary>
+      <div class="help-in">
+        <ul>
+          <li>マイクの使用が許可されているか確認してください。</li>
+          <li>「マイクゲイン」を上げてください。</li>
+          <li>静かな場所で「環境を測定」をやり直してください。うるさい場所で測ると、反応する音量の下限が高くなりすぎます。</li>
+          <li>マイクを手や机でふさいでいないか確認してください。</li>
+        </ul>
+      </div>
+    </details>
+
+    <details class="help-item">
+      <summary>弾いていないのに反応する</summary>
+      <div class="help-in">
+        <ul>
+          <li>静かにして「環境を測定」をやり直してください。</li>
+          <li>「マイクゲイン」を下げてください。</li>
+          <li>エアコン・扇風機・話し声を止めてください。</li>
+        </ul>
+      </div>
+    </details>
+
+    <details class="help-item">
+      <summary>数値が飛ぶ・安定しない</summary>
+      <div class="help-in">
+        <ul>
+          <li>鳴らす弦以外を、指や手のひらで止めてください。他の弦が共鳴すると混ざります。</li>
+          <li>「明瞭度」が低いときは、拾えている音がはっきりしていません。マイクに近づくか、もう少し強く弾いてください。</li>
+          <li>弾いた直後は音が揺れます。少し待ってから数値を見てください。</li>
+          <li>弦が古いと安定しません。</li>
+        </ul>
+      </div>
+    </details>
+
+    <details class="help-item">
+      <summary>弾いている途中で結果が出てしまう</summary>
+      <div class="help-in">
+        <ul>
+          <li>「チューナー」画面の設定で、<b>「音が止まってから結果を出すまで」</b>を長くしてください。</li>
+          <li>音が細くなると止まったと判断されます。最後まで音を保つか、弾き直してください。</li>
+        </ul>
+      </div>
+    </details>
+
+    <div class="help-sec">言葉の説明</div>
+
+    <details class="help-item">
+      <summary>¢（セント）</summary>
+      <div class="help-in">
+        <p>音程のズレを表す単位です。隣のフレットまで（半音）が100¢。10¢のズレは、和音を弾くと濁りとして聞こえます。</p>
+      </div>
+    </details>
+
+    <details class="help-item">
+      <summary>明瞭度</summary>
+      <div class="help-in">
+        <p>拾っている音が、どれだけはっきりした高さを持っているかの目安です。低いときは、雑音が多いか、音が小さすぎるか、複数の音が混ざっています。この値が低いと、表示される音程も当てになりません。</p>
+      </div>
+    </details>
+
+    <details class="help-item">
+      <summary>基準音A</summary>
+      <div class="help-in">
+        <p>チューニングの基準となる「ラ」の高さです。ふつうは440Hzです。合奏する相手や録音に合わせて変えるときだけ動かしてください。ここを変えると、すべての画面の判定がその高さを基準に変わります。</p>
+      </div>
+    </details>
+
+    <details class="help-item">
+      <summary>シャープ／フラット</summary>
+      <div class="help-in">
+        <p><b>シャープ</b>は狙いより高い状態、<b>フラット</b>は低い状態です。この画面では、メーターが右に振れていればシャープ、左ならフラットです。</p>
+      </div>
+    </details>
+
+    <div class="help-end">◈ Canary Tune</div>
+  </div>
 </div>
 
 <!-- ===== CALIBRATION OVERLAY ===== -->
@@ -1151,6 +1429,10 @@ const STROBE_DPC=7;         // rotation: degrees per cent per second
 // Reference tone
 let refOsc=null, refGain=null, refOn=false;   // reference A440 drone — plays on the shared audioCtx
 // ── Sound-effect engine (synthesized "pure hologram" cues) ──
+// 効果音は一律で控えめに鳴らす（音量つまみの値にこの比率を掛ける）
+const SE_SCALE=0.6;
+// お手本・再生の音量（効果音より前に出す）
+const AUD_LVL=0.34, AUD_BOTH_LVL=0.26;
 let seMuted=false, seVol=0.85, seMaster=null, seMasterCtx=null, seSignalLast=0, seBus=null, seConv=null, seWet=null;
 let seSelfAt=0;   // performance.now() of the last click that plays its OWN cue — global tap is suppressed right after
 try{ const _s=JSON.parse(localStorage.getItem('sb_tuner_se')||'{}');
@@ -1190,10 +1472,10 @@ function seDecodeAll(){
 function seEnsure(){
   if(!audioCtx) return false;
   if(seMaster && seMasterCtx===audioCtx) return true;
-  seMaster=audioCtx.createGain(); seMaster.gain.value=seMuted?0:seVol;
+  seMaster=audioCtx.createGain(); seMaster.gain.value=seMuted?0:seVol*SE_SCALE;
   seMaster.connect(audioCtx.destination); seMasterCtx=audioCtx; seDecodeAll(); return true;
 }
-function seApplyGain(){ if(seMaster) seMaster.gain.value=seMuted?0:seVol; }
+function seApplyGain(){ if(seMaster) seMaster.gain.value=seMuted?0:seVol*SE_SCALE; }
 function sePlay(name,gain,delay,onsrc){
   if(seMuted||!seEnsure()) return;
   const play=(buf)=>{
@@ -1440,6 +1722,22 @@ document.querySelectorAll('.tab').forEach(t=>{
   });
 });
 
+// ── 使い方（ヘルプ） ──────────────────────────────
+function openHelp(){
+  const ov=document.getElementById('helpOv'); if(!ov) return;
+  ov.classList.add('on');
+  const b=document.getElementById('helpBody'); if(b) b.scrollTop=0;
+}
+function closeHelp(){
+  const ov=document.getElementById('helpOv'); if(ov) ov.classList.remove('on');
+}
+document.addEventListener('keydown',e=>{
+  if(e.key==='Escape'){
+    const ov=document.getElementById('helpOv');
+    if(ov && ov.classList.contains('on')){ e.preventDefault(); closeHelp(); }
+  }
+});
+
 // keyboard on note panel
 document.getElementById('notePanel').addEventListener('keydown',e=>{
   if(e.key===' '||e.key==='Enter'){ e.preventDefault(); toggleTuner(); }
@@ -1487,16 +1785,6 @@ function onSettle(v){
   const el=document.getElementById('settleV'); if(el) el.textContent=settleBase.toFixed(2)+'秒';
   try{ localStorage.setItem('sb_tuner_settle',String(settleBase)); }catch(e){}
 }
-// ── 測定の様子（診断表示）────────────────────────────
-// 終了判定が働かない原因を切り分けるための一時的な表示。何が「音」として拾われ
-// 続けているのかを、その場で目視できるようにする。既定はオフ。
-let diagOn=false;
-try{ diagOn = (localStorage.getItem('sb_tuner_diag')==='on'); }catch(e){}
-function onDiag(v){
-  diagOn=(v==='on');
-  const b=document.getElementById('diagBar'); if(b) b.classList.toggle('on',diagOn);
-  try{ localStorage.setItem('sb_tuner_diag',diagOn?'on':'off'); }catch(e){}
-}
 // ── セントの説明（初回のみ）────────────────────────
 // ¢ を使う5つのタブの先頭に出し、どれか1つで閉じれば全部消える。読み直したい生徒の
 // ために、設定から呼び戻せるようにしてある。
@@ -1511,24 +1799,6 @@ function showCentNote(){
   try{ localStorage.removeItem('sb_tuner_centnote'); }catch(e){}
 }
 function centNoteInitUI(){ if(!centNoteDone()) centNotesEls().forEach(el=>el.classList.add('on')); }
-
-function diagInitUI(){
-  const sel=document.getElementById('diagSel'); if(sel) sel.value=diagOn?'on':'off';
-  const b=document.getElementById('diagBar'); if(b) b.classList.toggle('on',diagOn);
-}
-function diagUpdate(o){
-  if(!diagOn) return;
-  const set=(id,txt)=>{ const el=document.getElementById(id); if(el) el.textContent=txt; };
-  set('dgLevel', o.rms!=null ? o.rms.toFixed(4) : '—');
-  set('dgGate',  o.gate!=null ? o.gate.toFixed(4) : '—');
-  if(o.hz>0){
-    const nn=nearestNote(o.hz);
-    const mark = (o.counted===false) ? '　→ ノイズ扱い' : (o.counted===true ? '　→ 音程として採用' : '');
-    set('dgPitch', o.hz.toFixed(1)+' Hz（'+nn.name+'）　はっきり度 '+(o.clarity||0).toFixed(2)+mark);
-  } else set('dgPitch','なし');
-  set('dgLost', o.lostMs!=null ? (o.lostMs/1000).toFixed(1)+' 秒' : '—');
-  set('dgElapsed', o.elapsed!=null ? o.elapsed.toFixed(1)+' 秒' : '—');
-}
 function settleInitUI(){
   const sl=document.getElementById('settleSl'); if(sl) sl.value=settleBase;
   const sv=document.getElementById('settleV'); if(sv) sv.textContent=settleBase.toFixed(2)+'秒';
@@ -2042,10 +2312,6 @@ function gripLoop(ts){
         else { const p=Math.min(48,-cents/spanM*48); gf.style.left=(50-p)+'%'; gf.style.width=p+'%'; gf.style.background='var(--acc2)'; } }
     } else { if(gv) gv.textContent=nn.off.toFixed(0)+' ¢'; if(gf){ gf.style.left='50%'; gf.style.width='0'; } }
   } else { if(noteEl) noteEl.textContent='—'; if(gv) gv.textContent='— ¢'; if(gf) gf.style.width='0'; }
-  diagUpdate({ rms, gate:rmsGate, hz, clarity, counted:!!nn,
-               lostMs: gripLastSound?(now-gripLastSound):null,
-               elapsed: gripCapStart?((now-gripCapStart)/1000):null });
-
   if(gripCapturing){
     if(nn){ gripCap.push(hz); gripLastSound=now; if(!gripCapStart) gripCapStart=now; }
     if(gripCap.length>=5 && gripLastSound && now-gripLastSound>=settleMs('grip')){ finalizeGripCapture(); }        // silence → auto-finalize
@@ -2740,9 +3006,6 @@ function analyzeFrame(buf, now){
   // Damping the strings kills the pitch instantly, even though room noise / amp hiss keeps the
   // level up. Two guards stop this firing before the note exists: the take must be long enough,
   // and a real note must already be on record.
-  diagUpdate({ rms, gate:AN_STARTGATE(), hz:anLastHz, clarity:anLastClarity, counted:gotPitch,
-               lostMs: anLastPitch>0 ? (now-anLastPitch) : null, elapsed:t });
-
   const armed = (t*1000)>=AN_LOSS_MINMS && anRaw.length>=AN_LOSS_MINPTS && anLastPitch>0;
   if(armed && !gotPitch && (now-anLastPitch)>=AN_LOSS_MS){ stopAnalyze(); return; }
 
@@ -3899,8 +4162,8 @@ function playModel(){
   osc.frequency.setValueAtTime(pts[0][1], now);
   for(let k=1;k<pts.length;k++) osc.frequency.linearRampToValueAtTime(pts[k][1], now+pts[k][0]);
   g.gain.setValueAtTime(0, now);
-  g.gain.linearRampToValueAtTime(0.20, now+0.03);
-  g.gain.setValueAtTime(0.20, now+Math.max(0.06,dur-0.06));
+  g.gain.linearRampToValueAtTime(AUD_LVL, now+0.03);
+  g.gain.setValueAtTime(AUD_LVL, now+Math.max(0.06,dur-0.06));
   g.gain.linearRampToValueAtTime(0, now+dur+0.02);
   osc.start(now); osc.stop(now+dur+0.08);
   anAudio={osc:osc, gain:g}; anReplaying=true;
@@ -3930,8 +4193,8 @@ function playVibModel(){
   try{ osc.frequency.setValueCurveAtTime(curve, now, dur); }
   catch(e){ osc.frequency.setValueAtTime(centerHz, now); }
   g.gain.setValueAtTime(0, now);
-  g.gain.linearRampToValueAtTime(0.20, now+0.03);
-  g.gain.setValueAtTime(0.20, now+Math.max(0.06,dur-0.08));
+  g.gain.linearRampToValueAtTime(AUD_LVL, now+0.03);
+  g.gain.setValueAtTime(AUD_LVL, now+Math.max(0.06,dur-0.08));
   g.gain.linearRampToValueAtTime(0, now+dur+0.02);
   osc.start(now); osc.stop(now+dur+0.08);
   anAudio={osc:osc, gain:g}; anReplaying=true;
@@ -3956,8 +4219,8 @@ function replaySegment(){
   osc.frequency.setValueAtTime(seg[0].hz, now);
   for(let k=1;k<seg.length;k++) osc.frequency.linearRampToValueAtTime(seg[k].hz, now+(seg[k].t-t0));
   g.gain.setValueAtTime(0, now);
-  g.gain.linearRampToValueAtTime(0.22, now+0.02);
-  g.gain.setValueAtTime(0.22, now+Math.max(0.04,dur-0.03));
+  g.gain.linearRampToValueAtTime(AUD_LVL, now+0.02);
+  g.gain.setValueAtTime(AUD_LVL, now+Math.max(0.04,dur-0.03));
   g.gain.linearRampToValueAtTime(0, now+dur+0.01);
   osc.start(now); osc.stop(now+dur+0.06);
   anAudio={osc:osc, gain:g}; anReplaying=true;
@@ -4019,10 +4282,10 @@ function playBoth(){
     return {osc:osc, gain:g};
   }
   // お手本 (left, sine)
-  const vModel=makeVoice('sine', -0.85, 0.17);
+  const vModel=makeVoice('sine', -0.85, AUD_BOTH_LVL);
   modelPlan(vModel.osc, now);
   // 自分 (right, triangle) — the recorded pitch track
-  const vYou=makeVoice('triangle', 0.85, 0.17);
+  const vYou=makeVoice('triangle', 0.85, AUD_BOTH_LVL);
   vYou.osc.frequency.setValueAtTime(seg[0].hz, now);
   for(let k=1;k<seg.length;k++) vYou.osc.frequency.linearRampToValueAtTime(seg[k].hz, now+(seg[k].t-t0));
   anAudio=vYou; anAudioB=vModel; anReplaying=true;
@@ -4167,7 +4430,6 @@ buildOctMap();
 buildGeq();
 seInitUI();
 settleInitUI();
-diagInitUI();
 centNoteInitUI();
 // Global UI sound cues: tab switches get a rising blip, other buttons a soft tap.
 document.addEventListener('click', function(e){
