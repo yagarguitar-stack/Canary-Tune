@@ -256,8 +256,8 @@ input[type=range]:disabled{opacity:.4;cursor:not-allowed}
 .an-zoomcue{position:absolute;top:6px;right:8px;font-size:9.5px;color:var(--txt3);pointer-events:none;opacity:.8}
 .anzoom{position:fixed;inset:0;z-index:9000;background:rgba(2,5,10,.97);display:flex;flex-direction:column;
   padding:env(safe-area-inset-top) 10px 10px;backdrop-filter:blur(3px)}
-.anzoom-bar{display:flex;align-items:center;gap:10px;padding:8px 2px 6px}
-.anzoom-read{flex:1;font-family:var(--mono);font-size:14px;font-weight:600;color:var(--acc);
+.anzoom-bar{display:flex;align-items:center;gap:10px;padding:8px 2px 6px;flex-wrap:wrap;justify-content:flex-end}
+.anzoom-read{flex:1 1 100%;font-family:var(--mono);font-size:14px;font-weight:600;color:var(--acc);
   font-variant-numeric:tabular-nums;min-height:20px}
 .anzoom-x{flex:none;width:38px;height:38px;border-radius:var(--rs);border:1px solid var(--bdr);
   background:var(--sur);color:var(--txt);font-size:16px;cursor:pointer}
@@ -592,6 +592,7 @@ input[type=range]:disabled{opacity:.4;cursor:not-allowed}
 
 <div class="topbar">
   <h1><span class="hxdot">◈</span> Canary Tune</h1>
+  <button class="help-btn" onclick="openSet()" aria-label="設定を開く" title="設定">⚙&#xFE0E;</button>
   <button class="help-btn" onclick="openHelp()" aria-label="使い方を見る" title="使い方">?</button>
 </div>
 
@@ -700,54 +701,6 @@ input[type=range]:disabled{opacity:.4;cursor:not-allowed}
     <div class="sgrid" id="sgrid"></div>
   </div>
 
-  <div class="csec">
-    <h3>設定</h3>
-    <div class="crow">
-      <label>基準音 A</label>
-      <input type="range" id="a4Sl" min="430" max="450" value="440" step="0.5" oninput="onA4(this.value)">
-      <span class="cv" id="a4V">440.0</span>
-    </div>
-    <div class="crow">
-      <label>マイクゲイン</label>
-      <input type="range" id="gainSl" min="1" max="40" value="20" step="1" oninput="onGain(this.value)">
-      <span class="cv" id="gainV">20×</span>
-    </div>
-    <div class="crow">
-      <label>音が止まってから結果を出すまで</label>
-      <input type="range" id="settleSl" min="0.10" max="0.50" value="0.25" step="0.05" oninput="onSettle(this.value)">
-      <span class="cv" id="settleV">0.25秒</span>
-    </div>
-    <div class="crow" style="margin-top:-4px;margin-bottom:10px">
-      <span style="font-size:10.5px;color:var(--txt3);line-height:1.6">ベンド・ビブラート・押弦圧に適用されます。短くすると結果が早く出ますが、弾いている途中で打ち切られやすくなります。</span>
-    </div>
-    <div class="crow">
-      <label>セントの説明を表示する</label>
-      <button class="btn" onclick="showCentNote()">もう一度出す</button>
-    </div>
-    <div class="crow">
-      <label>合致音</label>
-      <select id="chimeSel">
-        <option value="click">クリック</option>
-        <option value="off">オフ</option>
-      </select>
-    </div>
-    <div class="crow">
-      <label>効果音</label>
-      <select id="seSel" onchange="onSeToggle(this.value)">
-        <option value="on">オン</option>
-        <option value="off">オフ</option>
-      </select>
-    </div>
-    <div class="crow">
-      <label>効果音の音量</label>
-      <input type="range" id="seVolSl" min="0" max="100" value="85" step="5" oninput="onSeVol(this.value)">
-      <span class="cv" id="seVolV">85%</span>
-    </div>
-    <div class="btn-row" style="margin-top:4px">
-      <button class="btn" style="flex:1" onclick="startCalib()">🎚 環境を測定（3秒静音）</button>
-    </div>
-    <button class="reftone" id="refBtn" onclick="toggleRef()">🎵 基準音を鳴らす (A = <span id="refHz">440.0</span> Hz)</button>
-  </div>
 </div>
 
 <!-- ===== TAB: OCTAVE ===== -->
@@ -1073,6 +1026,71 @@ input[type=range]:disabled{opacity:.4;cursor:not-allowed}
 <!-- ===== 測定の様子（診断表示） ===== -->
 
 <!-- ===== HELP OVERLAY (使い方) ===== -->
+<div class="help-ov" id="setOv" role="dialog" aria-modal="true" aria-label="設定">
+  <div class="help-hd">
+    <h2>◈ 設定</h2>
+    <button class="btn" onclick="closeSet()">閉じる</button>
+  </div>
+  <div class="help-body" id="setBody">
+  <div class="csec">
+    <h3>設定</h3>
+    <div class="crow">
+      <label>基準音 A</label>
+      <input type="range" id="a4Sl" min="430" max="450" value="440" step="0.5" oninput="onA4(this.value)">
+      <span class="cv" id="a4V">440.0</span>
+    </div>
+    <div class="crow">
+      <label>マイクゲイン</label>
+      <input type="range" id="gainSl" min="1" max="40" value="20" step="1" oninput="onGain(this.value)">
+      <span class="cv" id="gainV">20×</span>
+    </div>
+    <div class="crow">
+      <label>音が止まってから結果を出すまで</label>
+      <input type="range" id="settleSl" min="0.10" max="0.50" value="0.25" step="0.05" oninput="onSettle(this.value)">
+      <span class="cv" id="settleV">0.25秒</span>
+    </div>
+    <div class="crow" style="margin-top:-4px;margin-bottom:10px">
+      <span style="font-size:10.5px;color:var(--txt3);line-height:1.6">ベンド・ビブラート・押弦圧に適用されます。短くすると結果が早く出ますが、弾いている途中で打ち切られやすくなります。</span>
+    </div>
+    <div class="crow">
+      <label>セントの説明を表示する</label>
+      <button class="btn" onclick="showCentNote()">もう一度出す</button>
+    </div>
+    <div class="crow">
+      <label>合致音</label>
+      <select id="chimeSel">
+        <option value="click">クリック</option>
+        <option value="off">オフ</option>
+      </select>
+    </div>
+    <div class="crow">
+      <label>効果音</label>
+      <select id="seSel" onchange="onSeToggle(this.value)">
+        <option value="on">オン</option>
+        <option value="off">オフ</option>
+      </select>
+    </div>
+    <div class="crow">
+      <label>お手本・基準音の音量</label>
+      <input type="range" id="audVolSl" min="0" max="100" value="100" step="5" oninput="onAudVol(this.value)">
+      <span class="cv" id="audVolV">100%</span>
+    </div>
+    <div class="crow">
+      <label>効果音の音量</label>
+      <input type="range" id="seVolSl" min="0" max="100" value="85" step="5" oninput="onSeVol(this.value)">
+      <span class="cv" id="seVolV">85%</span>
+    </div>
+    <div class="btn-row" style="margin-top:4px">
+      <button class="btn" style="flex:1" onclick="audTest()">▶ 音量を試す（お手本 → 効果音）</button>
+    </div>
+    <div class="btn-row" style="margin-top:4px">
+      <button class="btn" style="flex:1" onclick="startCalib()">🎚 環境を測定（3秒静音）</button>
+    </div>
+    <button class="reftone" id="refBtn" onclick="toggleRef()">🎵 基準音を鳴らす (A = <span id="refHz">440.0</span> Hz)</button>
+  </div>
+  </div>
+</div>
+
 <div class="help-ov" id="helpOv" role="dialog" aria-modal="true" aria-label="使い方">
   <div class="help-hd">
     <h2>◈ 使い方</h2>
@@ -1121,11 +1139,12 @@ input[type=range]:disabled{opacity:.4;cursor:not-allowed}
           <li><b>クロマチック</b>：どんな音でも、いちばん近い音名で判定します。</li>
           <li><b>楽器別</b>：楽器とチューニングを選ぶと、その弦だけを狙って判定します。カポを付けているときはフレット数を選んでください。</li>
         </ul>
-        <h4>設定</h4>
+        <h4>設定（右上の ⚙ から開きます）</h4>
         <ul>
           <li><b>基準音A</b>：合わせる基準の高さ。通常は440Hzです。</li>
           <li><b>マイクゲイン</b>：反応が弱いときに上げます。上げすぎると雑音を拾います。</li>
           <li><b>音が止まってから結果を出すまで</b>：ベンド・ビブラート・押弦圧で、弾き終わってから結果が出るまでの間です。短くすると早く出ますが、弾いている途中で切られやすくなります。</li>
+          <li><b>お手本・基準音の音量／効果音の音量</b>：別々に変えられます。「音量を試す」で、二つを順に鳴らして確かめられます。</li>
           <li><b>基準音を鳴らす</b>：耳で合わせたいときの音出しです。</li>
         </ul>
       </div>
@@ -1300,7 +1319,7 @@ input[type=range]:disabled{opacity:.4;cursor:not-allowed}
       <summary>弾いている途中で結果が出てしまう</summary>
       <div class="help-in">
         <ul>
-          <li>「チューナー」画面の設定で、<b>「音が止まってから結果を出すまで」</b>を長くしてください。</li>
+          <li>右上の ⚙（設定）で、<b>「音が止まってから結果を出すまで」</b>を長くしてください。</li>
           <li>音が細くなると止まったと判断されます。最後まで音を保つか、弾き直してください。</li>
         </ul>
       </div>
@@ -1430,9 +1449,32 @@ const STROBE_DPC=7;         // rotation: degrees per cent per second
 let refOsc=null, refGain=null, refOn=false;   // reference A440 drone — plays on the shared audioCtx
 // ── Sound-effect engine (synthesized "pure hologram" cues) ──
 // 効果音は一律で控えめに鳴らす（音量つまみの値にこの比率を掛ける）
+// 個々の効果音の大きさは、スマホのスピーカーで聞いたときにそろうよう下の各呼び出しで調整済み
 const SE_SCALE=0.6;
-// お手本・再生の音量（効果音より前に出す）
-const AUD_LVL=0.34, AUD_BOTH_LVL=0.26;
+// お手本・基準音・再生の音量（効果音より前に出す）。
+// 純音はスマホのスピーカーでほとんど鳴らないため、倍音を少し足した「やわらかい笛」の音色で鳴らし、
+// 出口に音量の天井（リミッター）を置いて、重ねて鳴らしても割れないようにしている。
+const AUD_LVL=0.9, AUD_BOTH_LVL=0.6, REF_LVL=0.45;
+const FLUTE_HARM=[1,.35,.15,.06];
+let audVol=1.0, audBus=null, audBusCtx=null, fluteWave=null, fluteCtx=null;
+try{ const _a=parseFloat(localStorage.getItem('sb_tuner_aud'));
+  if(isFinite(_a)&&_a>=0&&_a<=1) audVol=_a;
+}catch(e){}
+function audOut(ctx){
+  if(audBus && audBusCtx===ctx) return audBus;
+  const lim=ctx.createDynamicsCompressor();
+  lim.threshold.value=-4; lim.knee.value=0; lim.ratio.value=20; lim.attack.value=0.003; lim.release.value=0.15;
+  lim.connect(ctx.destination);
+  audBus=ctx.createGain(); audBus.gain.value=audVol; audBus.connect(lim); audBusCtx=ctx;
+  return audBus;
+}
+function setFlute(osc,ctx){
+  if(!fluteWave || fluteCtx!==ctx){
+    fluteWave=ctx.createPeriodicWave(new Float32Array(FLUTE_HARM.length+1), new Float32Array([0].concat(FLUTE_HARM)));
+    fluteCtx=ctx;
+  }
+  osc.setPeriodicWave(fluteWave);
+}
 let seMuted=false, seVol=0.85, seMaster=null, seMasterCtx=null, seSignalLast=0, seBus=null, seConv=null, seWet=null;
 let seSelfAt=0;   // performance.now() of the last click that plays its OWN cue — global tap is suppressed right after
 try{ const _s=JSON.parse(localStorage.getItem('sb_tuner_se')||'{}');
@@ -1497,14 +1539,14 @@ function sePlay(name,gain,delay,onsrc){
   }catch(e){}
 }
 // named cues → mapped samples (Watari's mechanical-terminal set)
-function seTap(){ sePlay('click_003',0.9); }
-function seTab(){ sePlay('switch_005',0.9); }
-function seSignal(){ const n=performance.now(); if(n-seSignalLast<350) return; seSignalLast=n; sePlay('tick_002',0.8); }
-function seBootTap(){ sePlay('click_003',0.9); }
-function seBootStage(i){ sePlay('tick_002',0.9); }
-function seBootOnline(){ sePlay('confirmation_004',1.0); sePlay('bong_001',0.6,0.06); }
+function seTap(){ sePlay('click_003',0.58); }
+function seTab(){ sePlay('switch_005',1.9); }
+function seSignal(){ const n=performance.now(); if(n-seSignalLast<350) return; seSignalLast=n; sePlay('tick_002',0.65); }
+function seBootTap(){ sePlay('click_003',0.58); }
+function seBootStage(i){ sePlay('tick_002',0.65); }
+function seBootOnline(){ sePlay('confirmation_004',0.18); sePlay('bong_001',0.6,0.06); }
 function seScanStart(){ sePlay('scroll_004',0.6); }
-function seDone(){ sePlay('confirmation_003',1.0); }
+function seDone(){ sePlay('confirmation_003',0.26); }
 // Octave check
 let octActive=false, octData={}, octAccum={};
 let octMode='octave';               // 'octave' (open+12F) | 'map' (per-string 開放/5/7/12 diagnostic)
@@ -1731,10 +1773,21 @@ function openHelp(){
 function closeHelp(){
   const ov=document.getElementById('helpOv'); if(ov) ov.classList.remove('on');
 }
+// ── 設定（右上の歯車から開く） ──────────────────────
+function openSet(){
+  const ov=document.getElementById('setOv'); if(!ov) return;
+  ov.classList.add('on');
+  const b=document.getElementById('setBody'); if(b) b.scrollTop=0;
+}
+function closeSet(){
+  const ov=document.getElementById('setOv'); if(ov) ov.classList.remove('on');
+}
 document.addEventListener('keydown',e=>{
   if(e.key==='Escape'){
     const ov=document.getElementById('helpOv');
-    if(ov && ov.classList.contains('on')){ e.preventDefault(); closeHelp(); }
+    if(ov && ov.classList.contains('on')){ e.preventDefault(); closeHelp(); return; }
+    const so=document.getElementById('setOv');
+    if(so && so.classList.contains('on')){ e.preventDefault(); closeSet(); }
   }
 });
 
@@ -1764,6 +1817,22 @@ function onGain(v){ const nv=parseFloat(v);
   document.getElementById('gainV').textContent=nv+'×';
   if(gainNode) gainNode.gain.value=nv; }
 function onSeToggle(v){ seMuted=(v==='off'); seApplyGain(); seSave(); if(!seMuted) seTap(); }
+function onAudVol(v){ audVol=Math.max(0,Math.min(1,parseFloat(v)/100));
+  const el=document.getElementById('audVolV'); if(el) el.textContent=Math.round(audVol*100)+'%';
+  if(audBus) audBus.gain.value=audVol;
+  try{ localStorage.setItem('sb_tuner_aud',String(audVol)); }catch(e){} }
+// 音量を試す：お手本の音（3弦ソ）→ 効果音 の順に鳴らし、二つの大きさの釣り合いを確かめる
+function audTest(){
+  if(!audioCtx){ audioCtx=new (window.AudioContext||window.webkitAudioContext)(); }
+  if(audioCtx.state==='suspended') audioCtx.resume();
+  const ctx=audioCtx, now=ctx.currentTime+0.03, dur=0.9;
+  const osc=ctx.createOscillator(); setFlute(osc,ctx); osc.frequency.value=196;
+  const g=ctx.createGain(); g.gain.value=0; osc.connect(g); g.connect(audOut(ctx));
+  g.gain.setValueAtTime(0,now); g.gain.linearRampToValueAtTime(AUD_LVL,now+0.03);
+  g.gain.setValueAtTime(AUD_LVL,now+dur-0.06); g.gain.linearRampToValueAtTime(0,now+dur);
+  osc.start(now); osc.stop(now+dur+0.05);
+  sePlay('confirmation_003',0.26,1.15);
+}
 function onSeVol(v){ seVol=Math.max(0,Math.min(1,parseFloat(v)/100));
   document.getElementById('seVolV').textContent=Math.round(seVol*100)+'%';
   seApplyGain(); seSave(); if(!seMuted) seTap(); }
@@ -1807,6 +1876,8 @@ function seInitUI(){
   const sel=document.getElementById('seSel'); if(sel) sel.value=seMuted?'off':'on';
   const sl=document.getElementById('seVolSl'); if(sl) sl.value=Math.round(seVol*100);
   const sv=document.getElementById('seVolV'); if(sv) sv.textContent=Math.round(seVol*100)+'%';
+  const al=document.getElementById('audVolSl'); if(al) al.value=Math.round(audVol*100);
+  const av=document.getElementById('audVolV'); if(av) av.textContent=Math.round(audVol*100)+'%';
 }
 function setMode(m){ curMode=m;
   document.getElementById('m-chrom').classList.toggle('on',m==='chromatic');
@@ -2410,7 +2481,7 @@ function checkInTune(cents){
 // ════════════════════════════════════════════════
 function playChime(){
   if(seMuted||!seEnsure()) return;
-  sePlay('confirmation_001',0.85);
+  sePlay('confirmation_001',0.41);
   chimeUntil=performance.now()+330;               // skip detection while sounding
 }
 
@@ -2431,8 +2502,8 @@ function toggleRef(){
   if(!audioCtx){ audioCtx=new (window.AudioContext||window.webkitAudioContext)(); }
   if(audioCtx.state==='suspended') audioCtx.resume();
   refOsc=audioCtx.createOscillator(); refGain=audioCtx.createGain();
-  refOsc.type='sine'; refOsc.frequency.value=A4;
-  refGain.gain.value=0.15; refOsc.connect(refGain); refGain.connect(audioCtx.destination);
+  setFlute(refOsc,audioCtx); refOsc.frequency.value=A4;
+  refGain.gain.value=REF_LVL; refOsc.connect(refGain); refGain.connect(audOut(audioCtx));
   refOsc.start(); refOn=true; btn.classList.add('on');
 }
 
@@ -3940,6 +4011,8 @@ function openZoom(){
   drawZoom();
   const rd=document.getElementById('anZoomRead'); if(rd) rd.textContent='なぞってピッチ確認／下の◀▶で範囲を調整';
   const zmb=document.getElementById('anZoomModelBtn'); if(zmb) zmb.style.display=(bndSub==='pulloff'?'none':'');
+  const zbb=document.getElementById('anZoomBothBtn'), bbs=document.getElementById('bndBothBtn');
+  if(zbb) zbb.style.display=(bndSub!=='pulloff' && bbs && bbs.style.display!=='none')?'':'none';
   const modal=document.getElementById('anZoom'); modal.style.display='flex'; modal.setAttribute('aria-hidden','false');
   attachZoomInteract(svg);
 }
@@ -4129,6 +4202,7 @@ function stopAudition(){
   const vbb=document.getElementById('vibBothBtn'); if(vbb) vbb.textContent='🔀 重ねて';
   const zb=document.getElementById('anZoomPlayBtn'); if(zb) zb.textContent='▶ 再生';
   const zmb=document.getElementById('anZoomModelBtn'); if(zmb) zmb.textContent='🎯 お手本';
+  const zbb=document.getElementById('anZoomBothBtn'); if(zbb) zbb.textContent='🔀 重ねて';
 }
 // The ideal gesture for a bend sub-mode as [time(s), hz] points. Shared by the audio model (playModel)
 // and the on-graph ghost overlay so the two can never drift apart.
@@ -4155,9 +4229,9 @@ function playModel(){
   const s=anTgt.startHz, e=anTgt.targetHz;
   const pts=idealBendPts(s, e, bndSub);                 // the ideal gesture for this sub-mode
   const dur=pts[pts.length-1][0];
-  const osc=ctx.createOscillator(); osc.type='sine';
+  const osc=ctx.createOscillator(); setFlute(osc,ctx);
   const g=ctx.createGain(); g.gain.value=0;
-  osc.connect(g); g.connect(ctx.destination);
+  osc.connect(g); g.connect(audOut(ctx));
   const now=ctx.currentTime+0.03;
   osc.frequency.setValueAtTime(pts[0][1], now);
   for(let k=1;k<pts.length;k++) osc.frequency.linearRampToValueAtTime(pts[k][1], now+pts[k][0]);
@@ -4182,9 +4256,9 @@ function playVibModel(){
   if(ctx.state==='suspended') ctx.resume();
   const centerHz=anLastVib.centerHz, rate=anLastVib.rate, depth=anLastVib.depth;
   const dur=Math.min(2.6, Math.max(1.3, 7/rate));         // a handful of clean cycles
-  const osc=ctx.createOscillator(); osc.type='sine';
+  const osc=ctx.createOscillator(); setFlute(osc,ctx);
   const g=ctx.createGain(); g.gain.value=0;
-  osc.connect(g); g.connect(ctx.destination);
+  osc.connect(g); g.connect(audOut(ctx));
   const now=ctx.currentTime+0.03;
   // smooth frequency curve: center · 2^(depth·sin / 1200)
   const N=Math.max(96, Math.round(dur*rate*24));
@@ -4212,9 +4286,9 @@ function replaySegment(){
   const seg=anFull.pts.slice(anSeg.i0, anSeg.i1+1);
   if(seg.length<2) return;
   const t0=seg[0].t, dur=seg[seg.length-1].t-t0;
-  const osc=ctx.createOscillator(); osc.type='sine';
+  const osc=ctx.createOscillator(); setFlute(osc,ctx);
   const g=ctx.createGain(); g.gain.value=0;
-  osc.connect(g); g.connect(ctx.destination);
+  osc.connect(g); g.connect(audOut(ctx));
   const now=ctx.currentTime+0.03;
   osc.frequency.setValueAtTime(seg[0].hz, now);
   for(let k=1;k<seg.length;k++) osc.frequency.linearRampToValueAtTime(seg[k].hz, now+(seg[k].t-t0));
@@ -4269,11 +4343,11 @@ function playBoth(){
   const now=ctx.currentTime+0.04;
   // helper: a panned voice
   function makeVoice(type, pan, level){
-    const osc=ctx.createOscillator(); osc.type=type;
+    const osc=ctx.createOscillator(); if(type==='flute') setFlute(osc,ctx); else osc.type=type;
     const g=ctx.createGain(); g.gain.value=0;
     let tail=g;
     try{ if(ctx.createStereoPanner){ const p=ctx.createStereoPanner(); p.pan.value=pan; g.connect(p); tail=p; } }catch(e){}
-    osc.connect(g); tail.connect(ctx.destination);
+    osc.connect(g); tail.connect(audOut(ctx));
     g.gain.setValueAtTime(0, now);
     g.gain.linearRampToValueAtTime(level, now+0.03);
     g.gain.setValueAtTime(level, now+Math.max(0.05,dur-0.05));
@@ -4282,7 +4356,7 @@ function playBoth(){
     return {osc:osc, gain:g};
   }
   // お手本 (left, sine)
-  const vModel=makeVoice('sine', -0.85, AUD_BOTH_LVL);
+  const vModel=makeVoice('flute', -0.85, AUD_BOTH_LVL);
   modelPlan(vModel.osc, now);
   // 自分 (right, triangle) — the recorded pitch track
   const vYou=makeVoice('triangle', 0.85, AUD_BOTH_LVL);
@@ -4294,6 +4368,7 @@ function playBoth(){
   const tick=()=>{ if(!anReplaying) return; moveAnCursor((ctx.currentTime-(startAt+0.04))/dur); anCursorRaf=requestAnimationFrame(tick); };
   anCursorRaf=requestAnimationFrame(tick);
   const bb=document.getElementById(anMode==='bend'?'bndBothBtn':'vibBothBtn'); if(bb) bb.textContent='⏹ 停止';
+  const zbb=document.getElementById('anZoomBothBtn'); if(zbb) zbb.textContent='⏹ 停止';
   vYou.osc.onended=function(){ if(anAudio && anAudio.osc===vYou.osc) stopAudition(); };
   setAnStatus('🔀 重ねて再生 ― 左:お手本 ／ 右:あなた', true);
 }
@@ -4446,8 +4521,9 @@ document.addEventListener('click', function(e){
 <div id="anZoom" class="anzoom" style="display:none" aria-hidden="true">
   <div class="anzoom-bar">
     <div class="anzoom-read" id="anZoomRead">カーブをなぞるとピッチが出ます</div>
-    <button class="anzoom-x" id="anZoomPlayBtn" onclick="replaySegment()" aria-label="録音を再生" style="width:auto;padding:0 12px;margin-right:8px">▶ 再生</button>
-    <button class="anzoom-x" id="anZoomModelBtn" onclick="playModel()" aria-label="お手本を聴く" style="width:auto;padding:0 12px;margin-right:8px">🎯 お手本</button>
+    <button class="anzoom-x" id="anZoomPlayBtn" onclick="replaySegment()" aria-label="録音を再生" style="width:auto;padding:0 12px">▶ 再生</button>
+    <button class="anzoom-x" id="anZoomModelBtn" onclick="playModel()" aria-label="お手本を聴く" style="width:auto;padding:0 12px">🎯 お手本</button>
+    <button class="anzoom-x" id="anZoomBothBtn" onclick="playBoth()" aria-label="お手本と重ねて聴く" style="width:auto;padding:0 12px">🔀 重ねて</button>
     <button class="anzoom-x" onclick="closeZoom()" aria-label="閉じる">✕</button>
   </div>
   <div class="anzoom-stage">
