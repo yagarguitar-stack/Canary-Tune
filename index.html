@@ -798,10 +798,36 @@ input[type=range]:disabled{opacity:.4;cursor:not-allowed}
       <span style="font-size:12px;color:var(--txt2);font-weight:600">🎯 ターゲット音</span>
       <span style="margin-left:auto;font-size:11px;color:var(--txt3)">弦・フレット・ベンド量を選択</span>
     </div>
+    <!-- 登録したお題（押すと弦・フレット・ベンド幅・練習の種類が一度に切り替わる） -->
+    <div id="bndPreset" style="margin-bottom:8px">
+      <!-- 一覧の切り替え：自分で作ったお題／ScoreLineTAB の曲ごとの一覧 -->
+      <div class="crow" style="margin-bottom:6px">
+        <label>一覧</label>
+        <select id="bndListSel" onchange="presetUse(this.value)"></select>
+      </div>
+      <div style="display:flex;gap:6px;margin-bottom:6px">
+        <button class="btn" id="bndFromSlt" style="flex:1" onclick="presetFromSlt()">ScoreLineTAB の曲から登録</button>
+        <button class="btn" id="bndFromFile" style="flex:1" onclick="presetFromFile()">ファイルから登録</button>
+      </div>
+      <input type="file" id="bndFileIn" accept=".json,application/json" style="display:none" onchange="presetFileChosen(this)">
+      <div id="bndListNote" style="display:none;font-size:11px;color:var(--warn);margin:-2px 0 6px;line-height:1.5"></div>
+      <div class="seg wrap" id="bndPresetList" style="display:none;margin-bottom:6px"></div>
+      <div style="display:flex;gap:6px">
+        <button class="btn" id="bndPresetAdd" style="flex:1" onclick="presetAdd()">＋ 今の設定を登録</button>
+        <button class="btn" id="bndPresetEdit" style="flex:1;display:none" onclick="presetEditToggle()">一覧を編集</button>
+        <button class="btn" id="bndPresetOpen" style="flex:1;display:none" onclick="presetOpenControls()">設定を変える</button>
+      </div>
+      <button class="btn" id="bndListDel" style="width:100%;margin-top:6px;display:none;color:var(--warn)" onclick="presetListDelete()">この一覧を消す</button>
+      <label id="bndPresetAutoRow" style="display:none;align-items:center;gap:8px;font-size:12px;color:var(--txt2);cursor:pointer;user-select:none;margin-top:8px">
+        <input type="checkbox" id="bndPresetAuto" onchange="presetSetAuto(this.checked)" style="accent-color:var(--acc)">
+        判定のあと、次のお題へ進む
+      </label>
+      <div id="bndPresetNote" style="display:none;font-size:11px;color:var(--txt3);margin-top:6px;line-height:1.5"></div>
+    </div>
     <div id="bndTgtControls">
       <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:6px">
         <div class="tgt-row"><label>弦</label><div class="seg tgt-seg" id="bndTgtStrSeg"></div></div>
-        <div class="tgt-sl"><label>フレット</label><input type="range" id="bndTgtFret" min="1" max="24" step="1" oninput="updateTgt()"><span class="tgt-slv" id="bndTgtFretV">–</span></div>
+        <div class="tgt-sl"><label>フレット</label><input type="range" id="bndTgtFret" min="1" max="24" step="1" oninput="updateTgt();presetOnManualChange()"><span class="tgt-slv" id="bndTgtFretV">–</span></div>
         <div class="tgt-row"><label>ベンド幅</label><div class="seg tgt-seg" id="bndTgtBendSeg">
           <button class="seg-btn" data-b="0" onclick="pickTgtBend(0)">¼</button>
           <button class="seg-btn" data-b="1" onclick="pickTgtBend(1)">半音</button>
@@ -1201,6 +1227,9 @@ input[type=range]:disabled{opacity:.4;cursor:not-allowed}
           <li><b>🔊</b> 自分の演奏／<b>🎯</b> お手本／<b>🔀</b> 2つを重ねて、それぞれ聴けます。</li>
           <li>「詳細データ・カーブを見る」では、音程の動きを線で見られます。線の下の◀▶で、測る範囲を前後にずらせます。</li>
         </ul>
+        <h4>お題の登録</h4>
+        <p>弦・フレット・ベンド幅・練習の種類を「＋ 今の設定を登録」で一覧に残せます。一覧のボタンを押すと一度で切り替わります。「判定のあと、次のお題へ進む」をオンにすると、判定のあと次に「開始」を押したときに、次のお題へ順に進みます。</p>
+        <p>「ScoreLineTAB の曲から登録」「ファイルから登録」を使うと、曲に書いたチョーキングを、曲ごとの一覧として自動で登録します。同じチョーキングは一つにまとめ、曲に出てくる順に並べます。一覧は「一覧」の欄で切り替えます。</p>
         <h4>5問チャレンジ</h4>
         <p>お題が5問ランダムに出て、得点が付きます。最高得点は次に開いたときも残ります。</p>
         <h4>2つのチェック</h4>
@@ -1368,6 +1397,17 @@ input[type=range]:disabled{opacity:.4;cursor:not-allowed}
     <div class="dsmall" id="calVal">RMS: –</div>
     <div class="btn-row" id="calBtns" style="display:none">
       <button class="btn pri" style="flex:1" onclick="closeCalib()">完了</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== 曲を選ぶ（ScoreLineTAB の曲からお題を登録） ===== -->
+<div class="ov" id="songOv" onclick="if(event.target===this)this.classList.remove('on')">
+  <div class="ov-card">
+    <h2 id="songOvTitle">曲を選択</h2>
+    <div id="songOvList" style="max-height:60vh;overflow-y:auto;display:flex;flex-direction:column;gap:6px"></div>
+    <div class="btn-row" style="margin-top:12px">
+      <button class="btn" style="flex:1" onclick="document.getElementById('songOv').classList.remove('on')">閉じる</button>
     </div>
   </div>
 </div>
@@ -2860,8 +2900,8 @@ function highlightTgtSeg(){
   document.querySelectorAll('#bndTgtStrSeg .seg-btn').forEach(b=>b.classList.toggle('on', +b.dataset.idx===tgtStrIdx));
   document.querySelectorAll('#bndTgtBendSeg .seg-btn').forEach(b=>b.classList.toggle('on', +b.dataset.b===tgtBendIdx));
 }
-function pickTgtStr(idx){ tgtStrIdx=idx; highlightTgtSeg(); updateTgt(); }
-function pickTgtBend(b){ tgtBendIdx=b; highlightTgtSeg(); updateTgt(); }
+function pickTgtStr(idx){ tgtStrIdx=idx; highlightTgtSeg(); updateTgt(); presetOnManualChange(); }
+function pickTgtBend(b){ tgtBendIdx=b; highlightTgtSeg(); updateTgt(); presetOnManualChange(); }
 function updateTgt(){
   buildTgtSelectors();
   const arr=INST[document.getElementById('instSel').value]||INST.guitar;
@@ -2892,6 +2932,7 @@ function updateTgt(){
     ' &nbsp;→&nbsp; 目標 <b style="color:var(--acc)">'+targetName+'</b>（+'+bendC+'¢ / '+targetHz.toFixed(1)+'Hz）';
   if(!isReg) info+='<br><span style="color:var(--warn)">※ チューナーは現在「'+tuneName+'」です。開放弦の音がレギュラーと異なるため、上の音名はこのチューニング基準です。</span>';
   document.getElementById('bndTgtInfo').innerHTML=info;
+  try{ presetRender(); }catch(e){}   // 楽器・カポが変わったら、使えないお題を押せなくする
 }
 
 const AN_CLARITY=0.70;   // moving pitch (vibrato/bend) lowers NSDF clarity — keep these
@@ -2921,6 +2962,274 @@ function setTgtLock(on){
   // lock the target controls while a take is in flight (弦・ベンド幅 segments + フレット slider)
   document.querySelectorAll('#bndTgtStrSeg .seg-btn, #bndTgtBendSeg .seg-btn').forEach(b=>{ b.disabled=!!on; });
   const f=document.getElementById('bndTgtFret'); if(f) f.disabled=!!on;
+  // 登録したお題も、判定中は切り替えない（ターゲットの基準が途中で動かないように）
+  document.querySelectorAll('#bndPresetList .seg-btn, #bndPresetAdd, #bndPresetEdit, #bndPresetOpen, #bndListSel, #bndFromSlt, #bndFromFile, #bndListDel').forEach(b=>{ b.disabled=!!on; });
+}
+
+// ════════════════════════════════════════════════
+//  登録したお題（ベンド）
+//  弦・フレット・ベンド幅・練習の種類をまとめて登録し、ボタン一つで切り替える。
+//  お題を選んでいる間は細かい設定の欄をたたむ。手で設定を変えると、選んでいたお題は外れる。
+//  「判定のあと、次のお題へ進む」は、判定が出たあと次に「開始」を押した時点で切り替える
+//  （判定の直後に切り替えると、結果の聴き比べが次のお題の音で鳴ってしまうため）。
+// ════════════════════════════════════════════════
+const PRESET_KEY='sb_tuner_bendpresets';
+const PRESET_SUB={up:'',updown:'アップ→ダウン',downonly:'プリベンド',longtone:'ロングトーン',chokevib:'ビブラート'};
+const PRESET_BEND=['¼','半音','1音','1音半','2音'];
+// 一覧は複数持つ：'mine'＝自分で作ったお題、'slt:…'＝ScoreLineTAB の曲ごとの一覧。
+// presets／presetSel は、今選んでいる一覧の中身を指す。
+let plists=[{id:'mine',name:'自分で作ったお題',items:[],sel:-1}], pcur='mine';
+let presets=plists[0].items, presetSel=-1, presetAuto=false, presetEditing=false, presetPending=false, presetApplying=false;
+function presetValid(q){ return q&&q.s>0&&q.f>0&&q.b>=0&&q.b<5&&PRESET_SUB[q.sub]!==undefined; }
+try{ const _p=JSON.parse(localStorage.getItem(PRESET_KEY)||'null');
+  if(_p&&Array.isArray(_p.lists)){
+    const ls=_p.lists.filter(l=>l&&l.id&&Array.isArray(l.items)).map(l=>({id:String(l.id),name:String(l.name||'無題の曲'),tune:l.tune||'std',capo:l.capo|0,
+      items:l.items.filter(presetValid),sel:(typeof l.sel==='number'?l.sel:-1)}));
+    if(!ls.some(l=>l.id==='mine')) ls.unshift(plists[0]);
+    plists=ls; pcur=ls.some(l=>l.id===_p.cur)?_p.cur:'mine';
+  } else if(_p&&Array.isArray(_p.list)){   // 一覧が一つだった頃の保存
+    plists[0].items=_p.list.filter(presetValid);
+    if(typeof _p.sel==='number') plists[0].sel=_p.sel;
+  }
+  if(_p) presetAuto=!!_p.auto;
+}catch(e){}
+(function(){ const L=plists.find(l=>l.id===pcur); presets=L.items; presetSel=(L.sel>=0&&L.sel<presets.length)?L.sel:-1; })();
+function presetCurList(){ return plists.find(l=>l.id===pcur)||plists[0]; }
+function presetSave(){
+  presetCurList().sel=presetSel;
+  try{ localStorage.setItem(PRESET_KEY,JSON.stringify({lists:plists,cur:pcur,auto:presetAuto})); }catch(e){}
+}
+function presetName(q){ return q.s+'弦'+q.f+'F・'+PRESET_BEND[q.b]; }
+function presetNow(){
+  const arr=INST[document.getElementById('instSel').value]||INST.guitar;
+  return {s:arr.length-tgtStrIdx, f:parseInt(document.getElementById('bndTgtFret').value), b:tgtBendIdx, sub:bndSub};
+}
+function presetSame(a,b){ return a&&b&&a.s===b.s&&a.f===b.f&&a.b===b.b&&a.sub===b.sub; }
+// 使えるお題か（弦の数が足りない楽器・カポより下のフレットは選べない）
+function presetUsable(q){
+  const arr=INST[document.getElementById('instSel').value]||INST.guitar;
+  return q.s<=arr.length && q.f>capo;
+}
+function presetRender(){
+  const list=document.getElementById('bndPresetList'); if(!list) return;
+  list.innerHTML='';
+  presets.forEach((q,i)=>{
+    const b=document.createElement('button'); b.className='seg-btn'+(i===presetSel?' on':'');
+    const sub=PRESET_SUB[q.sub];
+    const where=(q.bars&&q.bars.length)?(q.bars[0]+'小節目'+(q.bars.length>1?'ほか':'')):'';
+    b.innerHTML=presetName(q)+(sub?'<br><span style="font-size:9px;opacity:.7">'+sub+'</span>':'')
+      +(where?'<br><span style="font-size:9px;opacity:.55">'+where+'</span>':'')
+      +(presetEditing?'<br><span style="font-size:10px;color:var(--warn)">✕ 消す</span>':'');
+    if(!presetUsable(q)&&!presetEditing){ b.disabled=true; b.title='今の楽器・カポでは使えません'; }
+    b.onclick=()=>{ if(presetEditing) presetDelete(i); else presetPick(i); };
+    list.appendChild(b);
+  });
+  const has=presets.length>0;
+  list.style.display=has?'':'none';
+  // 一覧の切り替え
+  const ls=document.getElementById('bndListSel');
+  if(ls){
+    ls.innerHTML=plists.map(l=>'<option value="'+l.id.replace(/"/g,'&quot;')+'"'+(l.id===pcur?' selected':'')+'>'
+      +(l.id==='mine'?'':'♪ ')+l.name.replace(/</g,'&lt;')+'（'+l.items.length+'）</option>').join('');
+  }
+  const L=presetCurList(),ln=document.getElementById('bndListNote');
+  const tn=presetTuneNote(L);
+  ln.textContent=tn; ln.style.display=tn?'':'none';
+  document.getElementById('bndListDel').style.display=(presetEditing&&L.id!=='mine')?'':'none';
+  document.getElementById('bndPresetEdit').style.display=has?'':'none';
+  document.getElementById('bndPresetEdit').textContent=presetEditing?'編集を終える':'一覧を編集';
+  document.getElementById('bndPresetAutoRow').style.display=(has&&presets.length>1)?'flex':'none';
+  document.getElementById('bndPresetAuto').checked=presetAuto;
+  // お題を選んでいる間は細かい設定の欄をたたむ
+  const folded=(presetSel>=0&&!presetEditing);
+  const ctl=document.getElementById('bndTgtControls');
+  if(ctl&&ctl.firstElementChild) ctl.firstElementChild.style.display=folded?'none':'';
+  const hint=document.getElementById('bndTgtHint'); if(hint) hint.style.display=folded?'none':'';
+  document.getElementById('bndPresetOpen').style.display=folded?'':'none';
+  document.getElementById('bndPresetAdd').style.display=(folded||presetEditing)?'none':'';
+  const note=document.getElementById('bndPresetNote');
+  if(presetPending&&presetAuto&&presets.length>1&&!presetEditing){
+    const nx=presetNextIdx();
+    note.textContent='次のお題：'+presetName(presets[nx])+(PRESET_SUB[presets[nx].sub]?'・'+PRESET_SUB[presets[nx].sub]:'')+'（「開始」を押すと切り替わります）';
+    note.style.display='';
+  } else note.style.display='none';
+}
+function presetApply(q){
+  presetApplying=true;
+  if(bndSub!==q.sub) setBendSub(q.sub);
+  const arr=INST[document.getElementById('instSel').value]||INST.guitar;
+  tgtStrIdx=arr.length-q.s; tgtBendIdx=q.b;
+  buildTgtSelectors();
+  document.getElementById('bndTgtFret').value=String(q.f);
+  highlightTgtSeg(); updateTgt();
+  presetApplying=false;
+}
+function presetPick(i){
+  const q=presets[i]; if(!q||!presetUsable(q)) return;
+  presetSel=i; presetPending=false;
+  presetApply(q); presetSave(); presetRender();
+}
+function presetAdd(){
+  const q=presetNow();
+  const at=presets.findIndex(x=>presetSame(x,q));
+  if(at>=0){ presetSel=at; }
+  else { presets.push(q); presetSel=presets.length-1; }
+  presetPending=false; presetSave(); presetRender();
+}
+function presetDelete(i){
+  presets.splice(i,1);
+  if(presetSel===i) presetSel=-1; else if(presetSel>i) presetSel--;
+  if(!presets.length) presetEditing=false;
+  presetPending=false; presetSave(); presetRender();
+}
+function presetEditToggle(){ presetEditing=!presetEditing; presetRender(); }
+// 一覧を切り替える
+function presetUse(id){
+  if(!plists.some(l=>l.id===id)) return;
+  presetCurList().sel=presetSel;
+  pcur=id; const L=presetCurList(); presets=L.items;
+  presetSel=(L.sel>=0&&L.sel<presets.length&&presetUsable(presets[L.sel]))?L.sel:-1;
+  presetEditing=false; presetPending=false;
+  if(presetSel>=0) presetApply(presets[presetSel]);
+  presetSave(); presetRender();
+}
+function presetListDelete(){
+  const L=presetCurList(); if(L.id==='mine') return;
+  plists=plists.filter(l=>l!==L);
+  presetUse('mine');
+}
+
+// ── ScoreLineTAB の曲から、チョーキングをお題として取り出す ──
+// 同じ github.io の上にあるので、同じ端末の ScoreLineTAB の保存を直接読める（読むだけ）。
+const SLT_INDEX='utadori-tab.index.v1', SLT_SONG='utadori-tab.song.';
+const SLT_AMT={0.25:0,0.5:1,1:2,1.5:3,2:4};   // TAB の上げる量（全音単位）→ ベンド幅
+// TAB の調弦 → CanaryTune の楽器の選択。無いものは null
+const SLT_TUNE={std:['guitar','レギュラー'],half:['guitar_halfdn','半音下げ'],whole:[null,'全音下げ'],dropd:['guitar_dropd','ドロップD'],
+  dropc:['guitar_dropc','ドロップC'],dadgad:['guitar_dadgad','DADGAD'],openg:['guitar_openg','オープンG'],opend:['guitar_opend','オープンD'],opene:[null,'オープンE']};
+function presetTuneNote(L){
+  if(!L||L.id==='mine') return '';
+  const t=SLT_TUNE[L.tune]||SLT_TUNE.std, now=document.getElementById('instSel').value;
+  let msg='';
+  if(!t[0]) msg='この曲は'+t[1]+'です。CanaryTune にはこの調弦が無いため、音名がずれます。';
+  else if(t[0]!==now) msg='この曲は'+t[1]+'です。チューナーの調弦を「'+t[1]+'」に合わせてください。';
+  if(L.capo>0) msg+=(msg?' ':'')+'カポ'+L.capo+'の曲です（フレットは実際の位置で登録しています）。';
+  return msg;
+}
+function sltBends(o){
+  if(!o||typeof o!=='object'||!Array.isArray(o.bars)||!o.bars.length) return null;
+  const meta=o.meta||{}, capo=Math.max(0,meta.capo|0), tune=SLT_TUNE[meta.tuning]?meta.tuning:'std';
+  const byId={}; o.bars.forEach(b=>{ if(b&&b.id) byId[b.id]=b; });
+  let order=[]; (o.sections||[]).forEach(sec=>((sec&&sec.items)||[]).forEach(it=>{ const b=it&&byId[it.barId]; if(b) order.push(b); }));
+  if(!order.length) order=o.bars.filter(Boolean);
+  // 曲の順に音を並べる（くり返しは展開せず、書いてある順）
+  const seq=[];
+  order.forEach((b,bi)=>{ (b.notes||[]).filter(n=>n&&typeof n.start==='number').slice().sort((a,c)=>a.start-c.start)
+    .forEach(n=>seq.push({no:bi+1,n})); });
+  // 次にその弦を弾く音が「d（チョークダウン）」なら、上げてから戻すチョーキング
+  function downAfter(i,str){
+    for(let j=i+1;j<seq.length&&j<=i+4;j++){
+      const n=seq[j].n; if(n.kind==='rest') return false;
+      const st=(n.stops||[]).find(x=>x&&x.s===str);
+      if(!st) continue;
+      if(st.t&&st.t.link==='bd') return true;
+      if(st.t&&st.t.bend) return false;
+      if(!(st.t&&st.t.tie)) return false;   // タイでつながった音なら、その先を見る
+    }
+    return false;
+  }
+  const items=[],key={};
+  function add(str,f,bend,sub,no){
+    const b=SLT_AMT[bend&&bend.amt]; if(b==null||typeof f!=='number') return;
+    const q={s:6-str,f:f+capo,b:b,sub:sub};
+    if(!(q.s>=1&&q.s<=6&&q.f>=1&&q.f<=24)) return;
+    const k=q.s+'-'+q.f+'-'+q.b+'-'+q.sub;
+    if(key[k]){ if(key[k].bars.indexOf(no)<0) key[k].bars.push(no); return; }
+    q.bars=[no]; key[k]=q; items.push(q);
+  }
+  seq.forEach((e,i)=>{
+    if(e.n.kind==='rest') return;
+    (e.n.stops||[]).forEach(st=>{
+      if(!st||!st.t||typeof st.s!=='number') return;
+      const t=st.t;
+      if(t.bend){
+        const sub=t.bend.pre?'downonly':t.vib?'chokevib':downAfter(i,st.s)?'updown':'up';
+        add(st.s,st.f,t.bend,sub,e.no);
+      }
+      // 装飾音符で書いたチョーキング
+      if(t.grace&&t.grace.bend&&typeof t.grace.f==='number') add(st.s,t.grace.f,t.grace.bend,'up',e.no);
+    });
+  });
+  return {title:meta.title||'無題の曲',tune:tune,capo:capo,items:items};
+}
+function presetFromSong(o,sid){
+  const r=sltBends(o);
+  if(!r){ showMsg('読み込めませんでした','ScoreLineTAB の曲として読めませんでした。'); return; }
+  if(!r.items.length){ showMsg('チョーキングがありません','「'+r.title+'」には、チョーキングが書かれていませんでした。'); return; }
+  const id='slt:'+(sid||r.title);
+  let L=plists.find(l=>l.id===id);
+  if(L){ L.name=r.title; L.tune=r.tune; L.capo=r.capo; L.items=r.items; L.sel=-1; }   // 同じ曲は新しい内容で入れ替える
+  else { L={id:id,name:r.title,tune:r.tune,capo:r.capo,items:r.items,sel:-1}; plists.push(L); }
+  presetUse(id);
+  presetPick(0);
+  const tn=presetTuneNote(L);
+  showMsg('お題を登録しました','「'+r.title+'」のチョーキングを'+r.items.length+'つ登録しました。'+(tn?' '+tn:''));
+}
+function presetSongList(title,cands){
+  document.getElementById('songOvTitle').textContent=title;
+  const box=document.getElementById('songOvList'); box.innerHTML='';
+  cands.forEach(c=>{
+    const b=document.createElement('button'); b.className='btn'; b.style.cssText='width:100%;flex-direction:column;align-items:flex-start;text-align:left;gap:2px';
+    const t=document.createElement('span'); t.style.cssText='font-size:13px;color:var(--txt);font-weight:600'; t.textContent=c.title; b.appendChild(t);
+    if(c.sub){ const u=document.createElement('span'); u.style.cssText='font-size:11px;color:var(--txt3)'; u.textContent=c.sub; b.appendChild(u); }
+    b.onclick=()=>{ document.getElementById('songOv').classList.remove('on'); c.load(); };
+    box.appendChild(b);
+  });
+  document.getElementById('songOv').classList.add('on');
+}
+function presetFromSlt(){
+  let idx=null; try{ idx=JSON.parse(localStorage.getItem(SLT_INDEX)||'null'); }catch(e){}
+  const list=(idx&&Array.isArray(idx.index))?idx.index.slice().sort((a,b)=>(b.updatedAt||0)-(a.updatedAt||0)):[];
+  if(!list.length){ showMsg('曲が見つかりません','この端末の ScoreLineTAB に保存された曲が見つかりません。ScoreLineTAB で書き出したファイルから登録してください。'); return; }
+  presetSongList('ScoreLineTAB の曲',list.map(e=>({title:e.title||'無題の曲',
+    sub:(e.barCount?'全'+e.barCount+'小節':'')+(e.updatedAt?'・'+(new Date(e.updatedAt).getMonth()+1)+'月'+new Date(e.updatedAt).getDate()+'日に保存':''),
+    load:()=>{ let o=null; try{ o=JSON.parse(localStorage.getItem(SLT_SONG+e.id)||'null'); }catch(err){} presetFromSong(o,e.id); }})));
+}
+function presetFromFile(){ const f=document.getElementById('bndFileIn'); f.value=''; f.click(); }
+function presetFileChosen(inp){
+  const f=inp.files&&inp.files[0]; if(!f) return;
+  const r=new FileReader();
+  r.onload=()=>{
+    let o; try{ o=JSON.parse(r.result); }catch(e){ showMsg('読み込めませんでした','ScoreLineTAB で書き出した .json ではないようです。'); return; }
+    const raws=o&&o.songs?o.songs:(o&&o.song?[o.song]:(Array.isArray(o)?o:[o]));
+    const songs=raws.filter(x=>x&&Array.isArray(x.bars));
+    if(!songs.length){ showMsg('読み込めませんでした','読み込める曲がありませんでした。'); return; }
+    if(songs.length===1){ presetFromSong(songs[0],songs[0].id); return; }
+    presetSongList('ファイルの中の曲',songs.map(x=>({title:(x.meta&&x.meta.title)||'無題の曲',sub:'全'+x.bars.length+'小節',load:()=>presetFromSong(x,x.id)})));
+  };
+  r.onerror=()=>showMsg('読み込めませんでした','ファイルを開けませんでした。');
+  r.readAsText(f);
+}
+function presetOpenControls(){ presetSel=-1; presetPending=false; presetSave(); presetRender(); }
+function presetSetAuto(on){ presetAuto=!!on; presetPending=false; presetSave(); presetRender(); }
+function presetNextIdx(){
+  for(let k=1;k<=presets.length;k++){ const j=(presetSel+k)%presets.length; if(presetUsable(presets[j])) return j; }
+  return presetSel;
+}
+// 手で設定を変えたら、選んでいたお題は外す（たたんだ欄も開く）
+function presetOnManualChange(){
+  if(presetApplying||presetSel<0||bgActive) return;   // 5問チャレンジが自分で切り替える分は除く
+  if(!presetSame(presets[presetSel],presetNow())){ presetSel=-1; presetPending=false; presetSave(); presetRender(); }
+}
+// 判定が出たら呼ばれる。次に「開始」を押したときに次のお題へ切り替える
+function presetAfterTake(){
+  if(!presetAuto||presetSel<0||presets.length<2) return;
+  presetPending=true; presetRender();
+}
+// 「開始」の直前に呼ばれる
+function presetBeforeTake(){
+  if(!presetPending) return;
+  presetPending=false;
+  const j=presetNextIdx(); presetSel=j; presetApply(presets[j]); presetSave(); presetRender();
 }
 function toggleAnalyze(mode){
   seSelfAt=performance.now();   // this click plays its own cue → skip the global tap
@@ -2939,6 +3248,7 @@ function toggleAnalyze(mode){
     return;
   }
   const start=()=>{
+    if(anMode==='bend'&&!bgActive) presetBeforeTake();   // 「次のお題へ進む」：ここで切り替える
     analyzeActive=true; tunerOn=false; octActive=false; anPhase='armed'; anArmHits=0; anPre=[];
     setTgtLock(true);   // freeze the target for this take — its basis mustn't shift mid-recording
     anRaw=[]; anSeg=null; anFull=null;
@@ -3502,6 +3812,7 @@ function bgQuit(){
   bgActive=false;
   // the game set its own targets — restore the user's setting (off, unless they enabled one)
   if(anTgtOn) updateTgt(); else anTgt=null;
+  if(presetSel>=0&&presetUsable(presets[presetSel])) presetApply(presets[presetSel]);   // 選んでいたお題に戻す
   BG_HIDE.forEach(function(p){ const el=document.getElementById(p[0]); if(el) el.style.display=p[1]; });
   document.getElementById('bgStartRow').style.display='';
   document.getElementById('bgPanel').style.display='none';
@@ -3521,6 +3832,7 @@ function setBendSub(m){
   // switching modes discards the previous take — each mode starts fresh
   anRaw=[]; anSeg=null; anFull=null;
   clearGraph(); setAnStatus('⏹ 停止中 ―「開始」を押してください');
+  if(typeof presetOnManualChange==='function') presetOnManualChange();
 }
 function stdOf(a){ if(!a.length) return 0; const m=a.reduce((x,y)=>x+y,0)/a.length; return Math.sqrt(a.reduce((x,y)=>x+(y-m)*(y-m),0)/a.length); }
 function nearestStd(reach){ const cand=[[50,'クオーター'],[100,'半音'],[200,'1音'],[300,'1音半'],[400,'2音']]; let tg=cand[0]; for(const t of cand) if(Math.abs(reach-t[0])<Math.abs(reach-tg[0])) tg=t; return tg; }
@@ -3862,6 +4174,7 @@ function renderBendCoach(M){
     const gErr = (signedErr!=null) ? signedErr : missC;
     if(gErr!=null){ bgLastErr=gErr; bgAfterAnswer(); }
   }
+  if(!bgActive) presetAfterTake();
 }
 
 
@@ -4500,6 +4813,9 @@ function finishBoot(){
 // ════════════════════════════════════════════════
 buildStrGrid();
 buildTgtSelectors(); updateTgt();   // target is mandatory: build the selectors AND compute it from the start
+// 前回選んでいたお題を戻す（今の楽器・カポで使えなければ外す）
+if(presetSel>=0&&presetUsable(presets[presetSel])) presetApply(presets[presetSel]); else presetSel=-1;
+presetRender();
 buildOctGrid();
 buildOctMap();
 buildGeq();
