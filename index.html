@@ -2964,6 +2964,8 @@ function setTgtLock(on){
   const f=document.getElementById('bndTgtFret'); if(f) f.disabled=!!on;
   // 登録したお題も、判定中は切り替えない（ターゲットの基準が途中で動かないように）
   document.querySelectorAll('#bndPresetList .seg-btn, #bndPresetAdd, #bndPresetEdit, #bndPresetOpen, #bndListSel, #bndFromSlt, #bndFromFile, #bndListDel').forEach(b=>{ b.disabled=!!on; });
+  // 固定を外したら描き直す（今の楽器・カポで使えないお題を、押せない状態に戻す）
+  if(!on){ try{ presetRender(); }catch(e){} }
 }
 
 // ════════════════════════════════════════════════
@@ -3115,15 +3117,27 @@ function presetTuneNote(L){
   if(L.capo>0) msg+=(msg?' ':'')+'カポ'+L.capo+'の曲です（フレットは実際の位置で登録しています）。';
   return msg;
 }
+// ScoreLineTAB は tab-6.2x から、音を「パートごと」に持つ（小節の np[パート]、カポ・調弦もパートごと）。
+// 使うのは、ScoreLineTAB で最後に表に出していたパート。古い形（小節の notes）もそのまま読む。
+function sltPartIdx(o){ const n=(Array.isArray(o.parts)&&o.parts.length)||1; return Math.min(Math.max(0,(+o.part)|0),n-1); }
+function sltBarNotes(o,b){
+  if(Array.isArray(b.np)&&b.np.length){ const a=b.np[Math.min(sltPartIdx(o),b.np.length-1)]; return Array.isArray(a)?a:[]; }
+  return Array.isArray(b.notes)?b.notes:[];
+}
+function sltPartMeta(o){
+  const meta=o.meta||{}, pt=(Array.isArray(o.parts)&&o.parts[sltPartIdx(o)])||null;
+  const cfgm=(pt&&pt.cfg&&pt.cfg.meta)||{};
+  return {capo:(pt&&Number.isInteger(pt.capo))?pt.capo:(meta.capo|0), tuning:cfgm.tuning||meta.tuning||'std'};
+}
 function sltBends(o){
   if(!o||typeof o!=='object'||!Array.isArray(o.bars)||!o.bars.length) return null;
-  const meta=o.meta||{}, capo=Math.max(0,meta.capo|0), tune=SLT_TUNE[meta.tuning]?meta.tuning:'std';
+  const meta=o.meta||{}, pm=sltPartMeta(o), capo=Math.max(0,pm.capo|0), tune=SLT_TUNE[pm.tuning]?pm.tuning:'std';
   const byId={}; o.bars.forEach(b=>{ if(b&&b.id) byId[b.id]=b; });
   let order=[]; (o.sections||[]).forEach(sec=>((sec&&sec.items)||[]).forEach(it=>{ const b=it&&byId[it.barId]; if(b) order.push(b); }));
   if(!order.length) order=o.bars.filter(Boolean);
   // 曲の順に音を並べる（くり返しは展開せず、書いてある順）
   const seq=[];
-  order.forEach((b,bi)=>{ (b.notes||[]).filter(n=>n&&typeof n.start==='number').slice().sort((a,c)=>a.start-c.start)
+  order.forEach((b,bi)=>{ sltBarNotes(o,b).filter(n=>n&&typeof n.start==='number').slice().sort((a,c)=>a.start-c.start)
     .forEach(n=>seq.push({no:bi+1,n})); });
   // 次にその弦を弾く音が「d（チョークダウン）」なら、上げてから戻すチョーキング
   function downAfter(i,str){
